@@ -189,7 +189,7 @@ included_columns = [col for col in data.columns if col not in exclude_columns]
 df_included = data[included_columns]
 
 # Calculate the correlation matrix
-correlation_matrix = df_included.corr()
+correlation_matrix = df_included.corr(method='spearman')
 
 # Mask upper triangle and diagonal correlations
 mask = np.triu(np.ones_like(correlation_matrix, dtype=bool))
@@ -374,7 +374,7 @@ for i in range(0,len(data)):
     
     
     # Calculate the correlation matrix
-    correlation_matrix = train.corr()
+    correlation_matrix = train.corr(method='spearman')
     
     
     SigNoise = pd.DataFrame(0, index=[0], columns=train.columns[:-1])
@@ -570,7 +570,7 @@ for i in range(0,len(data)):
     
     
     # Calculate the correlation matrix
-    correlation_matrix = train.corr()
+    correlation_matrix = train.corr(method='spearman')
     
     
     SigNoise = pd.DataFrame(0, index=[0], columns=train.columns[:-1])
@@ -732,7 +732,7 @@ included_columns = [col for col in data.columns if col not in exclude_columns]
 df_included = data[included_columns]
 
 # Calculate the correlation matrix
-correlation_matrix = df_included.corr()
+correlation_matrix = df_included.corr(method='spearman')
 
 # Mask upper triangle and diagonal correlations
 mask = np.triu(np.ones_like(correlation_matrix, dtype=bool))
