@@ -408,7 +408,7 @@ for i in range(0,len(data)):
     
     # Compute Gower distances between training and test data (excluding target columns)
     distances = gower.gower_matrix(train_fixed.iloc[:, :-1], test_fixed.iloc[:, :-1])
-    #distances = cdist(train.iloc[:, :-1], test.iloc[:,:-1], metric='euclidean') #This only works when there are only continuous variables
+    
     distances = pd.DataFrame(distances)
     train_index = pd.DataFrame(train.index)
     distances = pd.concat([train_index,distances],axis=1)
@@ -416,7 +416,7 @@ for i in range(0,len(data)):
     distances.columns = ["train_index","dist"]
     
     closest_subjects_indices = distances.sort_values("dist")
-    closest_subjects_indices = closest_subjects_indices[0:25] #Size of cluster is sqrt of total sample size
+    closest_subjects_indices = closest_subjects_indices[0:25] 
     closest_subjects_indices = closest_subjects_indices['train_index']
     train = train.loc[closest_subjects_indices,:]
     
@@ -559,7 +559,7 @@ for i in range(0,len(data)):
     
     # Compute Gower distances between training and test data (excluding target columns)
     distances = gower.gower_matrix(train_fixed.iloc[:, :-1], test_fixed.iloc[:, :-1])
-    #distances = cdist(train.iloc[:, :-1], test.iloc[:,:-1], metric='euclidean') #This only works when there are only continuous variables
+    
     distances = pd.DataFrame(distances)
     train_index = pd.DataFrame(train.index)
     distances = pd.concat([train_index,distances],axis=1)
@@ -567,7 +567,7 @@ for i in range(0,len(data)):
     distances.columns = ["train_index","dist"]
     
     closest_subjects_indices = distances.sort_values("dist")
-    closest_subjects_indices = closest_subjects_indices[0:25] #Size of cluster is sqrt of total sample size
+    closest_subjects_indices = closest_subjects_indices[0:25] 
     closest_subjects_indices = closest_subjects_indices['train_index']
     train = train.loc[closest_subjects_indices,:]
     
@@ -716,7 +716,7 @@ for i in range(0,len(data)):
     
     # Compute Gower distances between training and test data (excluding target columns)
     distances = gower.gower_matrix(train_fixed.iloc[:, :-1], test_fixed.iloc[:, :-1])
-    #distances = cdist(train.iloc[:, :-1], test.iloc[:,:-1], metric='euclidean') #This only works when there are only continuous variables
+    
     distances = pd.DataFrame(distances)
     train_index = pd.DataFrame(train.index)
     distances = pd.concat([train_index,distances],axis=1)
@@ -724,7 +724,7 @@ for i in range(0,len(data)):
     distances.columns = ["train_index","dist"]
     
     closest_subjects_indices = distances.sort_values("dist")
-    closest_subjects_indices = closest_subjects_indices[0:25] #Size of cluster is sqrt of total sample size
+    closest_subjects_indices = closest_subjects_indices[0:25] 
     closest_subjects_indices = closest_subjects_indices['train_index']
     train = train.loc[closest_subjects_indices,:]
     
@@ -875,7 +875,7 @@ for i in range(0,len(data)):
     
     # Compute Gower distances between training and test data (excluding target columns)
     distances = gower.gower_matrix(train_fixed.iloc[:, :-1], test_fixed.iloc[:, :-1])
-    #distances = cdist(train.iloc[:, :-1], test.iloc[:,:-1], metric='euclidean') #This only works when there are only continuous variables
+    
     distances = pd.DataFrame(distances)
     train_index = pd.DataFrame(train.index)
     distances = pd.concat([train_index,distances],axis=1)
@@ -883,7 +883,7 @@ for i in range(0,len(data)):
     distances.columns = ["train_index","dist"]
     
     closest_subjects_indices = distances.sort_values("dist")
-    closest_subjects_indices = closest_subjects_indices[0:25] #Size of cluster is sqrt of total sample size
+    closest_subjects_indices = closest_subjects_indices[0:25] 
     closest_subjects_indices = closest_subjects_indices['train_index']
     train = train.loc[closest_subjects_indices,:]
     
@@ -1037,7 +1037,7 @@ for i in range(0,len(data)):
     
     # Compute Gower distances between training and test data (excluding target columns)
     distances = gower.gower_matrix(train_fixed.iloc[:, :-1], test_fixed.iloc[:, :-1])
-    #distances = cdist(train.iloc[:, :-1], test.iloc[:,:-1], metric='euclidean') #This only works when there are only continuous variables
+    
     distances = pd.DataFrame(distances)
     train_index = pd.DataFrame(train.index)
     distances = pd.concat([train_index,distances],axis=1)
@@ -1045,7 +1045,7 @@ for i in range(0,len(data)):
     distances.columns = ["train_index","dist"]
     
     closest_subjects_indices = distances.sort_values("dist")
-    closest_subjects_indices = closest_subjects_indices[0:25] #Size of cluster is sqrt of total sample size
+    closest_subjects_indices = closest_subjects_indices[0:25] 
     closest_subjects_indices = closest_subjects_indices['train_index']
     train = train.loc[closest_subjects_indices,:]
     
