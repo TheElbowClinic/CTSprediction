@@ -155,13 +155,13 @@ SigNoise = pd.DataFrame(SigNoise)
 SigNoise.columns = df_included.columns[0:CONFIG["numb_var_assess"]]
 
 for i in range(SigNoise.shape[1]):
-    x = abs(correlation_matrix.iloc[len(correlation_matrix)-1,i])
+    x = correlation_matrix.iloc[len(correlation_matrix)-1,i]
     SigNoise.iloc[0, i] = x
 del i
 
 
 # Ordering data_imputed_over columns based on SNR values
-SigNoise = SigNoise.sort_values(by=0, axis=1, ascending=False)
+SigNoise = SigNoise.sort_values(by=0, axis=1, ascending=False, key=lambda x: abs(x))
     #Substetting SigNoise to number of variables
 trial = SigNoise.iloc[:, :CONFIG["numb_var_assess"]]
     #Saving variables names
@@ -298,4 +298,5 @@ print('A naive model standard deviation is ' + str(round(naive_model_mae.std(),1
 #Assess whether there is a statistical significant difference between the Naive and complex model
 t_stat, p_val = stats.ttest_rel(accuracy['Actual']-accuracy['Actual'].mean(), accuracy['Actual']-accuracy['Predicted'])
 print(f"t-statistic: {t_stat:.3f}")
+
 print(f"two-tailed p-value: {p_val:.4f}")
