@@ -1,0 +1,27 @@
+# Core Data Science Libraries
+pandas>=1.5.0
+numpy>=1.21.0
+
+# Machine Learning
+scikit-learn>=1.1.0
+
+# Statistical Analysis
+scipy>=1.9.0
+
+# Data Visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Data Imputation & Processing
+miceforest>=5.0.0
+gower>=0.8.0
+
+# Data Presentation
+tabulate>=0.8.0
+
+# Deep Learning
+tensorflow>=2.10.0
+
+# Advanced ML & Optimization
+scikit-optimize>=0.9.0
+pygam>=0.8.0
