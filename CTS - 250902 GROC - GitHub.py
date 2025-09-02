@@ -92,7 +92,6 @@ for col in columns_to_check:
     print(tabulate(freq_table, headers='keys', tablefmt='github'))
 
 #Imputing missing data using the MICE for categorical and continuous variables.
-#from sklearn.impute import KNNImputer
 # Reset index
 data = data.reset_index(drop=True)
 # Create a MICE kernel
@@ -300,3 +299,4 @@ t_stat, p_val = stats.ttest_rel(accuracy['Actual']-accuracy['Actual'].mean(), ac
 print(f"t-statistic: {t_stat:.3f}")
 
 print(f"two-tailed p-value: {p_val:.4f}")
+
