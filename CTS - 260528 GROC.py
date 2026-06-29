@@ -18,10 +18,11 @@ from tabulate import tabulate
 import miceforest as mf #To impute categorical and continuous variables
 
 #For modelling
-from sklearn.metrics import mean_absolute_error  # Change the import
+from sklearn.metrics import mean_squared_error
 from sklearn.tree import plot_tree
-from sklearn.metrics import mean_absolute_error
 from scipy import stats # For t-test
+from sklearn.ensemble import RandomForestClassifier
+from boruta import BorutaPy
 
 #Custom modules
 from src import missing_data, gower_distances, encoder_scaler, models, plotting
@@ -34,7 +35,6 @@ sklearn.utils.check_random_state(123)
 
 
 #------------- LOADING DATA ------------------#
-
 filename = askopenfilename()
 data = pd.read_excel(io=filename) #For the oversamples
 print(data.columns)
@@ -165,7 +165,7 @@ SigNoise = SigNoise.sort_values(by=0, axis=1, ascending=False, key=lambda x: abs
 trial = SigNoise.iloc[:, :CONFIG["numb_var_assess"]]
     #Saving variables names
 PlotXnames = trial.columns
-y = trial.iloc[0, :].values #Absolute values
+y = trial.iloc[0, :].values #values
 
 
 #Line plot
@@ -205,8 +205,37 @@ nomi = PlotXnames.insert(len(PlotXnames), 'GROC24Adjusted')
 data = data_imputed[nomi]
 #Data set up for modelling
 data = data.rename(columns={'GROC24Adjusted': 'DV'})
-accuracy_columns = ["Sample Size", "Actual", "MAE", "Predicted"]
+accuracy_columns = ["Sample Size", "Actual", "RMSE", "Predicted"]
 accuracy = pd.DataFrame(np.zeros((data.shape[0], len(accuracy_columns))), columns=accuracy_columns)
+
+
+
+
+#BORUTA FEATURE SELECTION - THIS WILL DETERMINE THE VARIABLES TO BE USED IN THE MODELLING
+
+#Create X and y variables for Boruta
+boruta_X = data.drop(columns=['DV'])
+boruta_y = data['DV'].astype('float64')
+
+#Create Random Forest Classifier
+clf = RandomForestClassifier(n_estimators=200, n_jobs=-1, max_depth=5)
+
+#Run Boruta
+trans = BorutaPy(clf, random_state=CONFIG["random_state"], verbose=2)
+sel = trans.fit_transform(boruta_X.values, boruta_y.values)
+
+#Get confirmed predictors
+confirmed_predictors = boruta_X.columns[trans.support_].tolist()
+#Subset data to confirmed predictors and dependent variable
+data = data[confirmed_predictors + ['DV']].copy()
+#Set final predictors to confirmed predictors
+final_predictors = confirmed_predictors
+#Get active categorical columns
+active_categorical_cols = [col for col in categorical_cols if col in final_predictors]
+#Print confirmed predictors
+print("Boruta-confirmed predictors:", confirmed_predictors)
+
+
 
 
 
@@ -223,7 +252,7 @@ for i in range(0,len(data)):
     test_fixed  = test.copy()
 
     # Map: categorical columns → string
-    dtype_map_mod = {col: 'str' for col in categorical_cols}
+    dtype_map_mod = {col: 'str' for col in active_categorical_cols}
     # Assign dtypes in one go
     train_fixed = train_fixed.astype(dtype_map_mod)
     test_fixed  = test_fixed.astype(dtype_map_mod)
@@ -237,7 +266,7 @@ for i in range(0,len(data)):
     )
 
     # Map: categorical columns → string
-    dtype_map_mod = {col: 'category' for col in categorical_cols}
+    dtype_map_mod = {col: 'category' for col in active_categorical_cols}
     train = train.astype(dtype_map_mod)
     test  = test.astype(dtype_map_mod)
 
@@ -245,7 +274,7 @@ for i in range(0,len(data)):
     X_train, X_test, y_train, y_test = encoder_scaler.freq_encode_and_scale(
     train_df=train,
     test_df=test,
-    categorical_cols=categorical_cols,
+    categorical_cols=active_categorical_cols,
     target_col="DV",
     do_scale=CONFIG["scalingY1N0"]          # set False if you don't want scaling
     )
@@ -272,31 +301,65 @@ for i in range(0,len(data)):
 
     prediction = preds
 
-    # Evaluate the model using Mean Absolute Error (MAE)
-    mae = mean_absolute_error(y_test, prediction)
-    print(f'Mean Absolute Error on Test Set: {mae}')
-    
+    # Evaluate the model using root mean square error (RMSE) on the held-out point
+    rmse = float(np.sqrt(mean_squared_error(y_test, prediction)))
+    print(f'RMSE on Test Set: {rmse}')
 
     accuracy.at[i,'Sample Size']=len(train)
     accuracy.at[i,'Actual']=y_test
-    accuracy.at[i,'MAE']= mae
+    accuracy.at[i,'RMSE']= rmse
     accuracy.at[i,'Predicted']= prediction
         
     print(i)
+
+    #Decision tree plot for each iteration of the leave one out cross validation
+    if CONFIG['model_name']=="dt":
+        plt.figure(figsize=(50, 40))
+        plot_tree(estimator, 
+                feature_names=PlotXnames,
+                filled=True,
+                rounded=True,
+                fontsize=12,
+                proportion=True)          # shows leaf proportion
+        plt.title(f"Regression tree {i}")
+        
+        # Create plots directory if it doesn't exist
+        plots_dir = "plots"
+        os.makedirs(plots_dir, exist_ok=True)
+        
+        # Save the plot with a descriptive filename
+        filename = f"decision_tree_{CONFIG['model_name']}_{i}.png"
+        filepath = os.path.join(plots_dir, filename)
+        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        plt.close()  # Close the figure to free memory
+        
+        print(f"Decision tree plot saved to: {filepath}")
 
 
 end = time.time()
 
 print('It took ' + str(round((end-beginning)/60,1)) + ' minutes to train and test the model.')
-naive_model_mae = abs(accuracy['Actual']-accuracy['Actual'].mean())
-print('The mean absolute error was ' + str(round(accuracy['MAE'].mean(),1)) + ' points')
-print('The standard deviation of the mean absolute error was ' + str(round(accuracy['MAE'].std(),1)) + ' points')
-print('A naive model mean absolute error is ' + str(round(naive_model_mae.mean(),1)) + ' points')
-print('A naive model standard deviation is ' + str(round(naive_model_mae.std(),1)) + ' points')
+naive_model_rmse = np.sqrt((accuracy['Actual'] - accuracy['Actual'].mean()) ** 2)
+print('The root mean square error was ' + str(round(accuracy['RMSE'].mean(),1)) + ' points')
+print('The standard deviation of the root mean square error was ' + str(round(accuracy['RMSE'].std(),1)) + ' points')
+print('A naive model root mean square error is ' + str(round(naive_model_rmse.mean(),1)) + ' points')
+print('A naive model standard deviation is ' + str(round(naive_model_rmse.std(),1)) + ' points')
+
+# Naive model residuals (actual minus global mean)
+naive_residuals = accuracy['Actual'] - accuracy['Actual'].mean()
+# Complex model residuals (actual minus predicted)
+model_residuals = accuracy['Actual'] - accuracy['Predicted']
+
+results_dir = "results"
+os.makedirs(results_dir, exist_ok=True)
+naive_residuals_path = os.path.join(results_dir, f"naive_residuals_{CONFIG['model_name']}.txt")
+model_residuals_path = os.path.join(results_dir, f"model_residuals_{CONFIG['model_name']}.txt")
+np.savetxt(naive_residuals_path, naive_residuals.values, fmt='%.6f')
+np.savetxt(model_residuals_path, model_residuals.values, fmt='%.6f')
+print(f"Naive model residuals saved to: {naive_residuals_path}")
+print(f"Model residuals saved to: {model_residuals_path}")
 
 #Assess whether there is a statistical significant difference between the Naive and complex model
-t_stat, p_val = stats.ttest_rel(accuracy['Actual']-accuracy['Actual'].mean(), accuracy['Actual']-accuracy['Predicted'])
+t_stat, p_val = stats.ttest_rel(naive_residuals, model_residuals)
 print(f"t-statistic: {t_stat:.3f}")
-
 print(f"two-tailed p-value: {p_val:.4f}")
-
