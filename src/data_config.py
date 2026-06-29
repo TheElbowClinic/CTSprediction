@@ -33,10 +33,10 @@ CONFIG = {
     "scalingY1N0": True, # Determines whether data will be scaled (True) or not (False) prior to modelling
     "subset_pre": 10, # Number of predictors in the model created around a cluster
     "random_state": 42,
-    "model_name": "dt",           # can be "random_forest", "ridge", …
+    "model_name": "gbm",           # can be "random_forest", "ridge", …
     "param_grid": None,               # leave None for the default grid
     "cv_folds": 2,
-    "scoring": "neg_mean_absolute_error",
+    "scoring": "neg_root_mean_squared_error",
 }
 
 # ────────────────────── CONFIG END ──────────────────────
